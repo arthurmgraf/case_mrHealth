@@ -1,0 +1,46 @@
+# Case Fictício - Teste Data Platform MVP -- Project Configuration
+
+project:
+  id: ${GCP_PROJECT_ID}  # Set in .env file
+  name: MR Health Data Platform MVP
+  region: ${GCP_REGION:-us-central1}
+  environment: mvp
+
+storage:
+  bucket: ${GCS_BUCKET_NAME}  # Set in .env file
+  prefixes:
+    raw_sales: raw/csv_sales
+    raw_reference: raw/reference_data
+    bronze: bronze
+    quarantine: quarantine
+
+bigquery:
+  location: US
+  datasets:
+    bronze: case_ficticio_bronze
+    silver: case_ficticio_silver
+    gold: case_ficticio_gold
+    monitoring: case_ficticio_monitoring
+
+cloud_functions:
+  csv_processor:
+    name: csv-processor
+    runtime: python311
+    memory: 256MB
+    timeout: 300s
+    trigger_bucket: ${GCS_BUCKET_NAME}
+    trigger_prefix: raw/csv_sales/
+
+cloud_scheduler:
+  daily_pipeline:
+    name: daily-transform-trigger
+    schedule: "0 2 * * *"  # 2 AM daily
+    timezone: America/Sao_Paulo
+
+free_tier_limits:
+  gcs_storage_gb: 5
+  bq_storage_gb: 10
+  bq_query_tb: 1
+  functions_invocations: 2000000
+  functions_gb_seconds: 400000
+  scheduler_jobs: 3

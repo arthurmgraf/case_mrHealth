@@ -1,0 +1,28 @@
+-- Case Fictício - Teste -- Gold Layer: Geography Dimension
+-- ================================================
+--
+-- Geography dimension with state-country hierarchy.
+-- Provides normalized geography lookup separate from units.
+--
+-- Grain: One row per state
+-- Key: geography_key (same as state_id)
+--
+-- Author: Arthur Graf -- Case Fictício - Teste Project
+-- Date: January 2026
+
+CREATE OR REPLACE TABLE `sixth-foundry-485810-e5.case_ficticio_gold.dim_geography` AS
+SELECT
+  -- Surrogate key
+  s.state_id AS geography_key,
+
+  -- State attributes
+  s.state_id,
+  s.state_name,
+
+  -- Country attributes
+  c.country_id,
+  c.country_name
+
+FROM `sixth-foundry-485810-e5.case_ficticio_silver.states` s
+JOIN `sixth-foundry-485810-e5.case_ficticio_silver.countries` c
+  ON s.country_id = c.country_id;

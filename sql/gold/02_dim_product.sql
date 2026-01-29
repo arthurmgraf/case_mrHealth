@@ -1,0 +1,29 @@
+-- Case Fictício - Teste -- Gold Layer: Product Dimension
+-- ==============================================
+--
+-- Product dimension with SCD Type 2 support (slowly changing dimension).
+-- Currently implemented as Type 1 (overwrite), but structure allows future Type 2.
+--
+-- Grain: One row per product
+-- Key: product_key (same as product_id for now)
+--
+-- Author: Arthur Graf -- Case Fictício - Teste Project
+-- Date: January 2026
+
+CREATE OR REPLACE TABLE `sixth-foundry-485810-e5.case_ficticio_gold.dim_product` AS
+SELECT
+  -- Surrogate key
+  product_id AS product_key,
+
+  -- Natural key
+  product_id,
+
+  -- Attributes
+  product_name,
+
+  -- SCD Type 2 support (currently not used, but prepared for future)
+  CURRENT_TIMESTAMP() AS _valid_from,
+  TIMESTAMP('9999-12-31 23:59:59') AS _valid_to,
+  TRUE AS is_current
+
+FROM `sixth-foundry-485810-e5.case_ficticio_silver.products`;
