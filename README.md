@@ -1,4 +1,4 @@
-> Documentacao principal do case: [case_MrHealth.md](case_MrHealth.md)
+> Documentacao principal: [MR_HEALTH_Data_Platform_Portfolio.html](docs/MR_HEALTH_Data_Platform_Portfolio.html)
 
 # MR. HEALTH Data Platform
 
