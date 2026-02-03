@@ -9,7 +9,7 @@ services:
       - ./superset/superset_config.py:/app/pythonpath/superset_config.py
       - superset-data:/app/superset_home
     environment:
-      SUPERSET_SECRET_KEY: "mrhealth-superset-dev-key-change-in-production"
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY:-change-me-in-production}
 
   superset:
     build:
@@ -30,7 +30,7 @@ services:
       - ./keys/service-account.json:/app/keys/gcp.json:ro
       - superset-data:/app/superset_home
     environment:
-      SUPERSET_SECRET_KEY: "mrhealth-superset-dev-key-change-in-production"
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY:-change-me-in-production}
       GOOGLE_APPLICATION_CREDENTIALS: /app/keys/gcp.json
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8088/health || exit 1"]

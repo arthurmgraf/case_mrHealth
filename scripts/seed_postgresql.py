@@ -87,7 +87,7 @@ Examples:
   python scripts/seed_postgresql.py --host 127.0.0.1 --password mypass
 
   # Direto no servidor K3s
-  python scripts/seed_postgresql.py --host <YOUR-K3S-IP> --password mypass
+  python scripts/seed_postgresql.py --host <YOUR-K3S-IP> --password <YOUR-PASSWORD>
         """,
     )
     parser.add_argument("--host", required=True, help="PostgreSQL host")
