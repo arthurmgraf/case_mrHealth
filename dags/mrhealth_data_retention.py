@@ -28,8 +28,8 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from google.cloud import bigquery, storage
 
-from plugins.mrhealth.callbacks.alerts import on_task_failure
-from plugins.mrhealth.config.loader import get_project_id, load_config
+from mrhealth.callbacks.alerts import on_task_failure
+from mrhealth.config.loader import get_project_id, load_config
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +51,8 @@ def calculate_storage(**context: Any) -> dict[str, Any]:
 
     bq_client = bigquery.Client(project=project_id)
     bq_bytes = 0
-    for dataset_name in ["case_ficticio_bronze", "case_ficticio_silver",
-                         "case_ficticio_gold", "case_ficticio_monitoring"]:
+    for dataset_name in ["mrhealth_bronze", "mrhealth_silver",
+                         "mrhealth_gold", "case_ficticio_monitoring"]:
         dataset_ref = bq_client.dataset(dataset_name)
         tables = list(bq_client.list_tables(dataset_ref))
         for table_ref in tables:
@@ -91,7 +91,7 @@ def archive_bronze(**context: Any) -> dict[str, Any]:
 
     for table in tables:
         sql = f"""
-        DELETE FROM `{project_id}.case_ficticio_bronze.{table}`
+        DELETE FROM `{project_id}.mrhealth_bronze.{table}`
         WHERE _ingest_date < DATE_SUB(CURRENT_DATE(), INTERVAL {max_days} DAY)
         """
         job = client.query(sql)

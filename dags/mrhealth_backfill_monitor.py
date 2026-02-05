@@ -29,8 +29,8 @@ from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import BranchPythonOperator, PythonOperator
 from google.cloud import bigquery
 
-from plugins.mrhealth.callbacks.alerts import on_task_failure
-from plugins.mrhealth.config.loader import get_project_id, load_config
+from mrhealth.callbacks.alerts import on_task_failure
+from mrhealth.config.loader import get_project_id, load_config
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ def detect_gaps(**context: Any) -> list[str]:
     ),
     actual_dates AS (
       SELECT DISTINCT order_date
-      FROM `{project_id}.case_ficticio_gold.fact_sales`
+      FROM `{project_id}.mrhealth_gold.fact_sales`
       WHERE order_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
     )
     SELECT d.date AS missing_date
@@ -125,7 +125,7 @@ def validate_backfill(**context: Any) -> None:
     for gap_date in gaps[:7]:
         sql = f"""
         SELECT COUNT(*) as cnt
-        FROM `{project_id}.case_ficticio_bronze.orders`
+        FROM `{project_id}.mrhealth_bronze.orders`
         WHERE data_pedido = '{gap_date}'
         """
         rows = list(client.query(sql).result())

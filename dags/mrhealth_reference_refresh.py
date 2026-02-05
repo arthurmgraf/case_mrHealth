@@ -24,11 +24,11 @@ from typing import Any
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.providers.google.cloud.sensors.gcs import GCSObjectsWithPrefixSensor
+from airflow.providers.google.cloud.sensors.gcs import GCSObjectsWithPrefixExistenceSensor
 from google.cloud import bigquery
 
-from plugins.mrhealth.callbacks.alerts import on_task_failure
-from plugins.mrhealth.config.loader import get_project_id, load_config
+from mrhealth.callbacks.alerts import on_task_failure
+from mrhealth.config.loader import get_project_id, load_config
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ def load_references_to_bronze(**context: Any) -> None:
 
     for table_name in REFERENCE_TABLES:
         gcs_uri = f"gs://{bucket_name}/raw/reference_data/{table_name}.csv"
-        table_id = f"{project_id}.case_ficticio_bronze.{table_name}"
+        table_id = f"{project_id}.mrhealth_bronze.{table_name}"
 
         job_config = bigquery.LoadJobConfig(
             source_format=bigquery.SourceFormat.CSV,
@@ -104,7 +104,7 @@ def validate_references(**context: Any) -> None:
     }
 
     for table_name, expected in expected_counts.items():
-        sql = f"SELECT COUNT(*) as cnt FROM `{project_id}.case_ficticio_bronze.{table_name}`"
+        sql = f"SELECT COUNT(*) as cnt FROM `{project_id}.mrhealth_bronze.{table_name}`"
         rows = list(client.query(sql).result())
         count = rows[0].cnt if rows else 0
         status = "OK" if count >= expected else "WARN"
@@ -113,8 +113,8 @@ def validate_references(**context: Any) -> None:
 
     fk_sql = f"""
     SELECT COUNT(*) as orphan_units
-    FROM `{project_id}.case_ficticio_bronze.units` u
-    LEFT JOIN `{project_id}.case_ficticio_bronze.states` s
+    FROM `{project_id}.mrhealth_bronze.units` u
+    LEFT JOIN `{project_id}.mrhealth_bronze.states` s
       ON u.id_estado = s.id_estado
     WHERE s.id_estado IS NULL
     """
@@ -164,7 +164,7 @@ with DAG(
         python_callable=trigger_pg_extraction,
     )
 
-    wait_gcs = GCSObjectsWithPrefixSensor(
+    wait_gcs = GCSObjectsWithPrefixExistenceSensor(
         task_id="wait_for_gcs_files",
         bucket=_bucket,
         prefix="raw/reference_data/",

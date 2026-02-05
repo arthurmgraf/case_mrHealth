@@ -23,8 +23,8 @@ from typing import Any
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
-from plugins.mrhealth.callbacks.alerts import on_task_failure
-from plugins.mrhealth.config.loader import get_project_id
+from mrhealth.callbacks.alerts import on_task_failure
+from mrhealth.config.loader import get_project_id
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ CHECK_NAMES = [
 
 def run_quality_check(check_name: str, **context: Any) -> dict[str, Any]:
     """Execute a single quality check and return the result via XCom."""
-    from plugins.mrhealth.quality.checks import DataQualityChecker
+    from mrhealth.quality.checks import DataQualityChecker
 
     project_id = get_project_id()
     ds = context["ds"]
@@ -74,7 +74,7 @@ def run_quality_check(check_name: str, **context: Any) -> dict[str, Any]:
 
 def save_all_results(**context: Any) -> None:
     """Run all checks and save results to BigQuery."""
-    from plugins.mrhealth.quality.checks import DataQualityChecker
+    from mrhealth.quality.checks import DataQualityChecker
 
     project_id = get_project_id()
     ds = context["ds"]
@@ -91,7 +91,7 @@ def save_all_results(**context: Any) -> None:
 
 def alert_on_failures(**context: Any) -> None:
     """Check results and alert if any check failed."""
-    from plugins.mrhealth.quality.checks import DataQualityChecker
+    from mrhealth.quality.checks import DataQualityChecker
 
     project_id = get_project_id()
     ds = context["ds"]

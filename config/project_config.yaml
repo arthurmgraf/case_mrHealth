@@ -17,9 +17,9 @@ storage:
 bigquery:
   location: US
   datasets:
-    bronze: case_ficticio_bronze
-    silver: case_ficticio_silver
-    gold: case_ficticio_gold
+    bronze: mrhealth_bronze
+    silver: mrhealth_silver
+    gold: mrhealth_gold
     monitoring: case_ficticio_monitoring
 
 postgresql:

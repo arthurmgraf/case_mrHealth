@@ -72,7 +72,7 @@ class DataQualityChecker:
         """Verifica se existem dados de hoje em fact_sales."""
         sql = f"""
         SELECT COUNT(*) as cnt
-        FROM `{self.project_id}.case_ficticio_gold.fact_sales`
+        FROM `{self.project_id}.mrhealth_gold.fact_sales`
         WHERE order_date = '{self.execution_date}'
         """
         start = time.time()
@@ -96,7 +96,7 @@ class DataQualityChecker:
         """Verifica se todas as unidades reportaram dados."""
         sql = f"""
         SELECT COUNT(DISTINCT unit_key) as active_units
-        FROM `{self.project_id}.case_ficticio_gold.fact_sales`
+        FROM `{self.project_id}.mrhealth_gold.fact_sales`
         WHERE order_date = '{self.execution_date}'
         """
         start = time.time()
@@ -122,12 +122,12 @@ class DataQualityChecker:
         """Verifica se totais de items_subtotal batem entre Silver e Gold."""
         sql = f"""
         WITH silver_total AS (
-          SELECT ROUND(SUM(vlr_item * qtd), 2) as total
-          FROM `{self.project_id}.case_ficticio_silver.order_items`
+          SELECT ROUND(SUM(unit_price * quantity), 2) as total
+          FROM `{self.project_id}.mrhealth_silver.order_items`
         ),
         gold_total AS (
           SELECT ROUND(SUM(items_subtotal), 2) as total
-          FROM `{self.project_id}.case_ficticio_gold.fact_sales`
+          FROM `{self.project_id}.mrhealth_gold.fact_sales`
         )
         SELECT
           s.total as silver_total,
@@ -159,7 +159,7 @@ class DataQualityChecker:
         """Verifica ausencia de order_id duplicados em Gold."""
         sql = f"""
         SELECT order_id, COUNT(*) as cnt
-        FROM `{self.project_id}.case_ficticio_gold.fact_sales`
+        FROM `{self.project_id}.mrhealth_gold.fact_sales`
         GROUP BY order_id
         HAVING cnt > 1
         LIMIT 10
@@ -185,8 +185,8 @@ class DataQualityChecker:
         """Verifica se todos os product_key em fact_order_items existem em dim_product."""
         sql = f"""
         SELECT COUNT(*) as orphan_count
-        FROM `{self.project_id}.case_ficticio_gold.fact_order_items` f
-        LEFT JOIN `{self.project_id}.case_ficticio_gold.dim_product` p
+        FROM `{self.project_id}.mrhealth_gold.fact_order_items` f
+        LEFT JOIN `{self.project_id}.mrhealth_gold.dim_product` p
           ON f.product_key = p.product_key
         WHERE p.product_key IS NULL
         """
@@ -211,7 +211,7 @@ class DataQualityChecker:
         sql = f"""
         WITH daily_counts AS (
           SELECT order_date, COUNT(*) as daily_orders
-          FROM `{self.project_id}.case_ficticio_gold.fact_sales`
+          FROM `{self.project_id}.mrhealth_gold.fact_sales`
           WHERE order_date >= DATE_SUB('{self.execution_date}', INTERVAL 30 DAY)
           GROUP BY order_date
         ),

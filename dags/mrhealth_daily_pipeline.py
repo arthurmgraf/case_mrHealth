@@ -37,11 +37,11 @@ from airflow.providers.google.cloud.operators.bigquery import (
     BigQueryCheckOperator,
 )
 from airflow.providers.google.cloud.sensors.gcs import (
-    GCSObjectsWithPrefixSensor,
+    GCSObjectsWithPrefixExistenceSensor,
 )
 from google.cloud import bigquery
 
-from plugins.mrhealth.callbacks.alerts import on_sla_miss, on_task_failure
+from mrhealth.callbacks.alerts import on_sla_miss, on_task_failure
 
 logger = logging.getLogger(__name__)
 
@@ -132,10 +132,10 @@ def quality_check_silver(**context: Any) -> None:
     client = _get_bq_client(project_id)
 
     checks = {
-        "orders_not_empty": f"SELECT COUNT(*) > 0 FROM `{project_id}.case_ficticio_silver.orders`",
-        "order_items_not_empty": f"SELECT COUNT(*) > 0 FROM `{project_id}.case_ficticio_silver.order_items`",
+        "orders_not_empty": f"SELECT COUNT(*) > 0 FROM `{project_id}.mrhealth_silver.orders`",
+        "order_items_not_empty": f"SELECT COUNT(*) > 0 FROM `{project_id}.mrhealth_silver.order_items`",
         "no_null_order_ids": (
-            f"SELECT COUNT(*) = 0 FROM `{project_id}.case_ficticio_silver.orders` "
+            f"SELECT COUNT(*) = 0 FROM `{project_id}.mrhealth_silver.orders` "
             f"WHERE id_pedido IS NULL"
         ),
     }
@@ -156,13 +156,13 @@ def quality_check_gold(**context: Any) -> None:
     client = _get_bq_client(project_id)
 
     checks = {
-        "fact_sales_not_empty": f"SELECT COUNT(*) > 0 FROM `{project_id}.case_ficticio_gold.fact_sales`",
+        "fact_sales_not_empty": f"SELECT COUNT(*) > 0 FROM `{project_id}.mrhealth_gold.fact_sales`",
         "dims_populated": (
-            f"SELECT COUNT(*) > 0 FROM `{project_id}.case_ficticio_gold.dim_product`"
+            f"SELECT COUNT(*) > 0 FROM `{project_id}.mrhealth_gold.dim_product`"
         ),
         "no_orphan_units": (
-            f"SELECT COUNT(*) = 0 FROM `{project_id}.case_ficticio_gold.fact_sales` f "
-            f"LEFT JOIN `{project_id}.case_ficticio_gold.dim_unit` u ON f.unit_key = u.unit_key "
+            f"SELECT COUNT(*) = 0 FROM `{project_id}.mrhealth_gold.fact_sales` f "
+            f"LEFT JOIN `{project_id}.mrhealth_gold.dim_unit` u ON f.unit_key = u.unit_key "
             f"WHERE u.unit_key IS NULL"
         ),
     }
@@ -187,9 +187,9 @@ def notify_pipeline_completion(**context: Any) -> None:
     client = _get_bq_client(project_id)
 
     tables_to_check = [
-        f"{project_id}.case_ficticio_silver.orders",
-        f"{project_id}.case_ficticio_gold.fact_sales",
-        f"{project_id}.case_ficticio_gold.agg_daily_sales",
+        f"{project_id}.mrhealth_silver.orders",
+        f"{project_id}.mrhealth_gold.fact_sales",
+        f"{project_id}.mrhealth_gold.agg_daily_sales",
     ]
 
     logger.info("=" * 60)
@@ -268,7 +268,7 @@ with DAG(
     _bucket = _config["storage"]["bucket"]
     _project = _config["project"]["id"]
 
-    sense_new_files = GCSObjectsWithPrefixSensor(
+    sense_new_files = GCSObjectsWithPrefixExistenceSensor(
         task_id="sense_new_files",
         bucket=_bucket,
         prefix="raw/csv_sales/{{ ds_nodash[:4] }}/{{ ds_nodash[4:6] }}/{{ ds_nodash[6:8] }}",
@@ -280,7 +280,7 @@ with DAG(
 
     validate_bronze = BigQueryCheckOperator(
         task_id="validate_bronze",
-        sql=f"SELECT COUNT(*) > 0 FROM `{_project}.case_ficticio_bronze.orders`",
+        sql=f"SELECT COUNT(*) > 0 FROM `{_project}.mrhealth_bronze.orders`",
         use_legacy_sql=False,
     )
 
@@ -316,7 +316,7 @@ with DAG(
 
     validate_gold = BigQueryCheckOperator(
         task_id="validate_gold",
-        sql=f"SELECT COUNT(*) > 0 FROM `{_project}.case_ficticio_gold.fact_sales`",
+        sql=f"SELECT COUNT(*) > 0 FROM `{_project}.mrhealth_gold.fact_sales`",
         use_legacy_sql=False,
     )
 
