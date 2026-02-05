@@ -1,0 +1,72 @@
+# F6-01: CI - Lint & Test
+# Runs on every PR to main/dev and pushes to dev.
+# Lints with Ruff, runs unit tests with pytest, uploads coverage to Codecov.
+
+name: CI - Lint & Test
+
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [dev]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - run: pip install ruff
+
+      - name: Ruff lint check
+        run: ruff check .
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+          pip install apache-airflow==2.8.1
+          pip install apache-airflow-providers-google==10.12.0
+
+      - name: Set environment
+        run: |
+          echo "MRHEALTH_CONFIG_PATH=$PWD/config/project_config.yaml" >> $GITHUB_ENV
+          echo "MRHEALTH_SQL_PATH=$PWD/sql" >> $GITHUB_ENV
+
+      - name: Run unit tests
+        run: >
+          pytest tests/unit/ -v --tb=short
+          --cov=scripts
+          --cov=cloud_functions
+          --cov=plugins
+          --cov-report=xml
+          --cov-report=term-missing
+
+      - uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: coverage.xml
+          fail_ci_if_error: false

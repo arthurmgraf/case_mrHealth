@@ -1,0 +1,17 @@
+# F8-02: Airflow Logs PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-logs-pvc
+  namespace: mrhealth-db
+  labels:
+    app: airflow
+    part-of: mrhealth
+    component: logs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi

@@ -1,0 +1,62 @@
+[
+  {
+    "name": "metric_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique metric record identifier"
+  },
+  {
+    "name": "dag_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Airflow DAG identifier"
+  },
+  {
+    "name": "dag_run_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Airflow DAG run identifier"
+  },
+  {
+    "name": "task_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Airflow task identifier"
+  },
+  {
+    "name": "metric_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Name of the metric (duration, rows_processed, etc.)"
+  },
+  {
+    "name": "metric_value",
+    "type": "FLOAT64",
+    "mode": "REQUIRED",
+    "description": "Metric numeric value"
+  },
+  {
+    "name": "metric_unit",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Unit of measurement (seconds, rows, bytes)"
+  },
+  {
+    "name": "execution_date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "Execution date (partition key)"
+  },
+  {
+    "name": "execution_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "Execution timestamp (UTC)"
+  },
+  {
+    "name": "details",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Additional details as JSON string"
+  }
+]

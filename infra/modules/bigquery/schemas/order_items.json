@@ -1,0 +1,56 @@
+[
+  {
+    "name": "id_pedido",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Order identifier (FK to orders)"
+  },
+  {
+    "name": "id_item_pedido",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Order item identifier"
+  },
+  {
+    "name": "id_produto",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Product identifier (FK to products)"
+  },
+  {
+    "name": "qtd",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Quantity ordered"
+  },
+  {
+    "name": "vlr_item",
+    "type": "NUMERIC",
+    "mode": "NULLABLE",
+    "description": "Item total value"
+  },
+  {
+    "name": "observacao",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Item observation/notes"
+  },
+  {
+    "name": "_source_file",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Source CSV file path in GCS"
+  },
+  {
+    "name": "_ingest_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Ingestion timestamp (UTC)"
+  },
+  {
+    "name": "_ingest_date",
+    "type": "DATE",
+    "mode": "NULLABLE",
+    "description": "Ingestion date (partition key)"
+  }
+]

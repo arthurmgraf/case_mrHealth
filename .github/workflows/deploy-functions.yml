@@ -1,0 +1,153 @@
+# F6-03: Deploy Cloud Functions
+# Triggered on push to main when cloud_functions/ changes.
+# Uses Workload Identity Federation (no service account keys).
+# Deploys each changed Cloud Function to GCP.
+
+name: Deploy Cloud Functions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cloud_functions/**"
+
+concurrency:
+  group: deploy-functions
+  cancel-in-progress: false
+
+env:
+  GCP_REGION: us-central1
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      csv_processor: ${{ steps.changes.outputs.csv_processor }}
+      pg_reference_extractor: ${{ steps.changes.outputs.pg_reference_extractor }}
+      data_generator: ${{ steps.changes.outputs.data_generator }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed functions
+        id: changes
+        run: |
+          changed_files=$(git diff --name-only HEAD~1 HEAD)
+
+          if echo "$changed_files" | grep -q "^cloud_functions/csv_processor/"; then
+            echo "csv_processor=true" >> $GITHUB_OUTPUT
+          else
+            echo "csv_processor=false" >> $GITHUB_OUTPUT
+          fi
+
+          if echo "$changed_files" | grep -q "^cloud_functions/pg_reference_extractor/"; then
+            echo "pg_reference_extractor=true" >> $GITHUB_OUTPUT
+          else
+            echo "pg_reference_extractor=false" >> $GITHUB_OUTPUT
+          fi
+
+          if echo "$changed_files" | grep -q "^cloud_functions/data_generator/"; then
+            echo "data_generator=true" >> $GITHUB_OUTPUT
+          else
+            echo "data_generator=false" >> $GITHUB_OUTPUT
+          fi
+
+  deploy-csv-processor:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.csv_processor == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy csv-processor
+        run: |
+          gcloud functions deploy csv-processor \
+            --gen2 \
+            --region=${{ env.GCP_REGION }} \
+            --runtime=python311 \
+            --source=cloud_functions/csv_processor \
+            --entry-point=process_csv \
+            --trigger-event-filters="type=google.cloud.storage.object.v1.finalized" \
+            --trigger-event-filters="bucket=${{ secrets.GCS_BUCKET_NAME }}" \
+            --memory=256MB \
+            --timeout=300s \
+            --project=${{ secrets.GCP_PROJECT_ID }}
+
+  deploy-pg-reference-extractor:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.pg_reference_extractor == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy pg-reference-extractor
+        run: |
+          gcloud functions deploy pg-reference-extractor \
+            --gen2 \
+            --region=${{ env.GCP_REGION }} \
+            --runtime=python311 \
+            --source=cloud_functions/pg_reference_extractor \
+            --entry-point=extract_references \
+            --trigger-http \
+            --allow-unauthenticated=false \
+            --memory=256MB \
+            --timeout=300s \
+            --project=${{ secrets.GCP_PROJECT_ID }}
+
+  deploy-data-generator:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.data_generator == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy data-generator
+        run: |
+          gcloud functions deploy data-generator \
+            --gen2 \
+            --region=${{ env.GCP_REGION }} \
+            --runtime=python311 \
+            --source=cloud_functions/data_generator \
+            --entry-point=generate_data \
+            --trigger-http \
+            --allow-unauthenticated=false \
+            --memory=256MB \
+            --timeout=300s \
+            --project=${{ secrets.GCP_PROJECT_ID }}

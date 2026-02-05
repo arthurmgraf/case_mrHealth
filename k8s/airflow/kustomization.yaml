@@ -1,0 +1,17 @@
+# F8-04: Kustomize for Airflow K3s deployment
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mrhealth-db
+
+commonLabels:
+  part-of: mrhealth
+
+resources:
+  - pvc-dags.yaml
+  - pvc-logs.yaml
+  - secret-gcp.yaml
+  - postgres.yaml
+  - configmap.yaml
+  - webserver.yaml
+  - scheduler.yaml

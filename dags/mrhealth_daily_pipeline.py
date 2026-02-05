@@ -3,17 +3,20 @@ MR. Health Daily Pipeline DAG
 ==============================
 
 Orchestrates the full Medallion pipeline: Bronze -> Silver -> Gold.
+Includes quality checks at Silver and Gold layers with SLA monitoring.
 
 Schedule: Daily at 02:00 BRT (after CSV files arrive at midnight)
 Tasks:
-    1. sense_new_files   - Wait for new CSV files in GCS
-    2. validate_bronze   - Verify Bronze layer has data for today
-    3. build_silver      - Execute Silver SQL transformations
-    4. build_dims        - Build Gold dimension tables (parallel)
-    5. build_facts       - Build Gold fact tables (parallel)
-    6. build_aggs        - Build pre-aggregated KPI tables
-    7. validate_gold     - Verify Gold layer has rows
-    8. notify_completion - Log pipeline summary
+    1. sense_new_files       - Wait for new CSV files in GCS
+    2. validate_bronze       - Verify Bronze layer has data for today
+    3. build_silver          - Execute Silver SQL transformations
+    4. quality_check_silver  - Validate Silver layer quality
+    5. build_dims            - Build Gold dimension tables (parallel)
+    6. build_facts           - Build Gold fact tables (parallel)
+    7. build_aggs            - Build pre-aggregated KPI tables
+    8. quality_check_gold    - Validate Gold star schema
+    9. validate_gold         - Verify Gold layer has rows
+   10. notify_completion     - Log pipeline summary + save metrics
 
 Author: Arthur Graf
 Date: February 2026
@@ -37,6 +40,8 @@ from airflow.providers.google.cloud.sensors.gcs import (
     GCSObjectsWithPrefixSensor,
 )
 from google.cloud import bigquery
+
+from plugins.mrhealth.callbacks.alerts import on_sla_miss, on_task_failure
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +125,63 @@ def run_aggregations(**context: Any) -> None:
     logger.info("Aggregations complete.")
 
 
+def quality_check_silver(**context: Any) -> None:
+    """Run quick quality checks on Silver layer after transforms."""
+    config = _load_project_config()
+    project_id = config["project"]["id"]
+    client = _get_bq_client(project_id)
+
+    checks = {
+        "orders_not_empty": f"SELECT COUNT(*) > 0 FROM `{project_id}.case_ficticio_silver.orders`",
+        "order_items_not_empty": f"SELECT COUNT(*) > 0 FROM `{project_id}.case_ficticio_silver.order_items`",
+        "no_null_order_ids": (
+            f"SELECT COUNT(*) = 0 FROM `{project_id}.case_ficticio_silver.orders` "
+            f"WHERE id_pedido IS NULL"
+        ),
+    }
+
+    for check_name, sql in checks.items():
+        rows = list(client.query(sql).result())
+        passed = bool(rows[0][0]) if rows else False
+        status = "PASS" if passed else "FAIL"
+        logger.info("[%s] Silver check: %s", status, check_name)
+        if not passed:
+            raise ValueError(f"Silver quality check failed: {check_name}")
+
+
+def quality_check_gold(**context: Any) -> None:
+    """Run quality checks on Gold star schema."""
+    config = _load_project_config()
+    project_id = config["project"]["id"]
+    client = _get_bq_client(project_id)
+
+    checks = {
+        "fact_sales_not_empty": f"SELECT COUNT(*) > 0 FROM `{project_id}.case_ficticio_gold.fact_sales`",
+        "dims_populated": (
+            f"SELECT COUNT(*) > 0 FROM `{project_id}.case_ficticio_gold.dim_product`"
+        ),
+        "no_orphan_units": (
+            f"SELECT COUNT(*) = 0 FROM `{project_id}.case_ficticio_gold.fact_sales` f "
+            f"LEFT JOIN `{project_id}.case_ficticio_gold.dim_unit` u ON f.unit_key = u.unit_key "
+            f"WHERE u.unit_key IS NULL"
+        ),
+    }
+
+    for check_name, sql in checks.items():
+        rows = list(client.query(sql).result())
+        passed = bool(rows[0][0]) if rows else False
+        status = "PASS" if passed else "FAIL"
+        logger.info("[%s] Gold check: %s", status, check_name)
+        if not passed:
+            raise ValueError(f"Gold quality check failed: {check_name}")
+
+
 def notify_pipeline_completion(**context: Any) -> None:
+    import json
+    import time
+    import uuid
+    from datetime import datetime, timezone
+
     config = _load_project_config()
     project_id = config["project"]["id"]
     client = _get_bq_client(project_id)
@@ -135,17 +196,48 @@ def notify_pipeline_completion(**context: Any) -> None:
     logger.info("PIPELINE COMPLETE - Summary")
     logger.info("=" * 60)
 
+    total_rows = 0
     for table_id in tables_to_check:
         try:
             result = client.query(
                 f"SELECT COUNT(*) AS cnt FROM `{table_id}`"
             ).result()
             count = list(result)[0].cnt
+            total_rows += count
             logger.info("  %s: %s rows", table_id.split(".")[-1], f"{count:,}")
         except Exception as e:
             logger.warning("  %s: ERROR - %s", table_id, e)
 
     logger.info("=" * 60)
+
+    now = datetime.now(timezone.utc)
+    start_time = context.get("data_interval_start")
+    duration = (now - start_time).total_seconds() if start_time else 0
+
+    metrics = [
+        {"metric_name": "pipeline_status", "metric_value": 1.0, "metric_unit": "boolean"},
+        {"metric_name": "duration", "metric_value": duration, "metric_unit": "seconds"},
+        {"metric_name": "rows_processed", "metric_value": float(total_rows), "metric_unit": "rows"},
+    ]
+
+    table_id = f"{project_id}.case_ficticio_monitoring.pipeline_metrics"
+    for m in metrics:
+        rows = [{
+            "metric_id": str(uuid.uuid4())[:12],
+            "dag_id": DAG_ID,
+            "dag_run_id": context.get("run_id", ""),
+            "task_id": "notify_completion",
+            "metric_name": m["metric_name"],
+            "metric_value": m["metric_value"],
+            "metric_unit": m["metric_unit"],
+            "execution_date": context.get("ds", now.strftime("%Y-%m-%d")),
+            "execution_timestamp": now.isoformat(),
+            "details": json.dumps({}),
+        }]
+        try:
+            client.insert_rows_json(table_id, rows)
+        except Exception as e:
+            logger.warning("Failed to save metric %s: %s", m["metric_name"], e)
 
 
 default_args = {
@@ -157,6 +249,7 @@ default_args = {
     "retries": 2,
     "retry_delay": timedelta(minutes=5),
     "execution_timeout": timedelta(minutes=30),
+    "on_failure_callback": on_task_failure,
 }
 
 with DAG(
@@ -168,6 +261,7 @@ with DAG(
     catchup=False,
     tags=TAGS,
     doc_md=__doc__,
+    sla_miss_callback=on_sla_miss,
 ) as dag:
 
     _config = _load_project_config()
@@ -210,6 +304,16 @@ with DAG(
         python_callable=run_aggregations,
     )
 
+    check_silver = PythonOperator(
+        task_id="quality_check_silver",
+        python_callable=quality_check_silver,
+    )
+
+    check_gold = PythonOperator(
+        task_id="quality_check_gold",
+        python_callable=quality_check_gold,
+    )
+
     validate_gold = BigQueryCheckOperator(
         task_id="validate_gold",
         sql=f"SELECT COUNT(*) > 0 FROM `{_project}.case_ficticio_gold.fact_sales`",
@@ -222,6 +326,6 @@ with DAG(
         trigger_rule="all_done",
     )
 
-    sense_new_files >> validate_bronze >> build_silver
-    build_silver >> [build_dims, build_facts]
-    [build_dims, build_facts] >> build_aggs >> validate_gold >> notify
+    sense_new_files >> validate_bronze >> build_silver >> check_silver
+    check_silver >> [build_dims, build_facts]
+    [build_dims, build_facts] >> build_aggs >> check_gold >> validate_gold >> notify

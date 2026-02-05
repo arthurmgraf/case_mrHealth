@@ -1,0 +1,86 @@
+[
+  {
+    "name": "check_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique check execution identifier"
+  },
+  {
+    "name": "check_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Name of the quality check"
+  },
+  {
+    "name": "check_category",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Category (completeness, uniqueness, freshness, consistency)"
+  },
+  {
+    "name": "layer",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Medallion layer (bronze, silver, gold)"
+  },
+  {
+    "name": "table_name",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Target table name"
+  },
+  {
+    "name": "check_sql",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "SQL query used for the check"
+  },
+  {
+    "name": "result",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Result: PASS, FAIL, ERROR"
+  },
+  {
+    "name": "expected_value",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Expected value for the check"
+  },
+  {
+    "name": "actual_value",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Actual value observed"
+  },
+  {
+    "name": "details",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Additional details or error messages"
+  },
+  {
+    "name": "execution_date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "Execution date (partition key)"
+  },
+  {
+    "name": "execution_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "Execution timestamp (UTC)"
+  },
+  {
+    "name": "dag_run_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Airflow DAG run ID"
+  },
+  {
+    "name": "duration_seconds",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Check execution duration in seconds"
+  }
+]

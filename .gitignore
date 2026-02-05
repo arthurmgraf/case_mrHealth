@@ -2,6 +2,8 @@
 keys/
 *.json
 !config/*.json
+!infra/modules/bigquery/schemas/*.json
+!k8s/grafana/dashboards/*.json
 .env
 .env.*
 !.env.example

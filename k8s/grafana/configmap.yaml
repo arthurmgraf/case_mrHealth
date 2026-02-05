@@ -1,0 +1,53 @@
+# F7-04: Grafana ConfigMaps
+# 1. Datasource provisioning (BigQuery via grafana-bigquery-datasource plugin)
+# 2. Dashboard provisioning (auto-load from /var/lib/grafana/dashboards/)
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: mrhealth-monitoring
+  labels:
+    app: grafana
+    part-of: mrhealth
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: BigQuery
+        type: grafana-bigquery-datasource
+        access: proxy
+        isDefault: true
+        jsonData:
+          authenticationType: jwt
+          clientEmail: ""
+          defaultProject: sixth-foundry-485810-e5
+          tokenUri: https://oauth2.googleapis.com/token
+        secureJsonData:
+          privateKey: ""
+        editable: true
+        uid: bigquery-mrhealth
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-config
+  namespace: mrhealth-monitoring
+  labels:
+    app: grafana
+    part-of: mrhealth
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: mrhealth
+        orgId: 1
+        folder: MR Health
+        type: file
+        disableDeletion: false
+        editable: true
+        updateIntervalSeconds: 30
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards
+          foldersFromFilesStructure: false

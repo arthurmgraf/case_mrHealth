@@ -1,3 +1,4 @@
+# F8-06: Airflow Scheduler with git-sync sidecar
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,6 +6,7 @@ metadata:
   namespace: mrhealth-db
   labels:
     app: airflow-scheduler
+    part-of: mrhealth
 spec:
   replicas: 1
   selector:
@@ -14,6 +16,7 @@ spec:
     metadata:
       labels:
         app: airflow-scheduler
+        part-of: mrhealth
     spec:
       initContainers:
         - name: wait-for-webserver
@@ -26,6 +29,24 @@ spec:
           envFrom:
             - configMapRef:
                 name: airflow-config
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/opt/airflow/keys/service-account.json"
+            - name: MRHEALTH_CONFIG_PATH
+              value: "/opt/airflow/dags/repo/config/project_config.yaml"
+            - name: MRHEALTH_SQL_PATH
+              value: "/opt/airflow/dags/repo/sql"
+          volumeMounts:
+            - name: dags
+              mountPath: /opt/airflow/dags
+            - name: logs
+              mountPath: /opt/airflow/logs
+            - name: airflow-config-vol
+              mountPath: /opt/airflow/config
+              readOnly: true
+            - name: gcp-keys
+              mountPath: /opt/airflow/keys
+              readOnly: true
           resources:
             requests:
               memory: "512Mi"
@@ -33,3 +54,42 @@ spec:
             limits:
               memory: "1Gi"
               cpu: "500m"
+        # git-sync sidecar: keeps DAGs in sync with the Git repository
+        - name: git-sync
+          image: registry.k8s.io/git-sync/git-sync:v4.1.0
+          env:
+            - name: GITSYNC_REPO
+              value: "https://github.com/your-org/projeto_empresa_data_lakers.git"
+            - name: GITSYNC_BRANCH
+              value: "main"
+            - name: GITSYNC_PERIOD
+              value: "60s"
+            - name: GITSYNC_ROOT
+              value: "/dags"
+            - name: GITSYNC_DEST
+              value: "repo"
+            - name: GITSYNC_ONE_TIME
+              value: "false"
+          volumeMounts:
+            - name: dags
+              mountPath: /dags
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+      volumes:
+        - name: dags
+          persistentVolumeClaim:
+            claimName: airflow-dags-pvc
+        - name: logs
+          persistentVolumeClaim:
+            claimName: airflow-logs-pvc
+        - name: airflow-config-vol
+          configMap:
+            name: airflow-config
+        - name: gcp-keys
+          secret:
+            secretName: airflow-gcp-credentials

@@ -1,0 +1,17 @@
+# F8-01: Airflow DAGs PVC (used by git-sync sidecar)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-dags-pvc
+  namespace: mrhealth-db
+  labels:
+    app: airflow
+    part-of: mrhealth
+    component: dags
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi

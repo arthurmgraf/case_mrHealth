@@ -1,0 +1,26 @@
+[
+  {
+    "name": "id_unidade",
+    "type": "INT64",
+    "mode": "REQUIRED",
+    "description": "Unit identifier"
+  },
+  {
+    "name": "nome_unidade",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Unit name"
+  },
+  {
+    "name": "id_estado",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "State identifier (FK to states)"
+  },
+  {
+    "name": "_ingest_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Ingestion timestamp (UTC)"
+  }
+]

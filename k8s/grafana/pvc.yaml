@@ -1,0 +1,16 @@
+# F7-02: Grafana Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-data-pvc
+  namespace: mrhealth-monitoring
+  labels:
+    app: grafana
+    part-of: mrhealth
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi

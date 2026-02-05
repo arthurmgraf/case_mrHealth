@@ -1,0 +1,68 @@
+[
+  {
+    "name": "id_unidade",
+    "type": "INT64",
+    "mode": "REQUIRED",
+    "description": "Unit identifier"
+  },
+  {
+    "name": "id_pedido",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Order identifier"
+  },
+  {
+    "name": "tipo_pedido",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Order type (delivery, dine-in, takeout)"
+  },
+  {
+    "name": "data_pedido",
+    "type": "DATE",
+    "mode": "NULLABLE",
+    "description": "Order date"
+  },
+  {
+    "name": "vlr_pedido",
+    "type": "NUMERIC",
+    "mode": "NULLABLE",
+    "description": "Order total value"
+  },
+  {
+    "name": "endereco_entrega",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Delivery address"
+  },
+  {
+    "name": "taxa_entrega",
+    "type": "NUMERIC",
+    "mode": "NULLABLE",
+    "description": "Delivery fee"
+  },
+  {
+    "name": "status",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Order status"
+  },
+  {
+    "name": "_source_file",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Source CSV file path in GCS"
+  },
+  {
+    "name": "_ingest_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Ingestion timestamp (UTC)"
+  },
+  {
+    "name": "_ingest_date",
+    "type": "DATE",
+    "mode": "NULLABLE",
+    "description": "Ingestion date (partition key)"
+  }
+]

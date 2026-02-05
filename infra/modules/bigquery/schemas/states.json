@@ -1,0 +1,26 @@
+[
+  {
+    "name": "id_estado",
+    "type": "INT64",
+    "mode": "REQUIRED",
+    "description": "State identifier"
+  },
+  {
+    "name": "id_pais",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Country identifier (FK to countries)"
+  },
+  {
+    "name": "nome_estado",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "State name"
+  },
+  {
+    "name": "_ingest_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Ingestion timestamp (UTC)"
+  }
+]

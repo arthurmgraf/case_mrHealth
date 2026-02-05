@@ -1,0 +1,19 @@
+# F7-06: Grafana NodePort Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: mrhealth-monitoring
+  labels:
+    app: grafana
+    part-of: mrhealth
+spec:
+  type: NodePort
+  selector:
+    app: grafana
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30300
+      protocol: TCP
+      name: http

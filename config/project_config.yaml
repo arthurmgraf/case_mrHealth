@@ -76,3 +76,43 @@ free_tier_limits:
   functions_invocations: 2000000
   functions_gb_seconds: 400000
   scheduler_jobs: 3
+
+monitoring:
+  dataset: case_ficticio_monitoring
+  tables:
+    quality_log: data_quality_log
+    pipeline_metrics: pipeline_metrics
+    free_tier_usage: free_tier_usage
+
+retention:
+  bronze_max_days: 90
+  gcs_raw_max_days: 60
+  free_tier_alert_pct: 80
+
+quality:
+  expected_units: 50
+  volume_std_threshold: 2.0
+  accuracy_tolerance: 0.01
+
+airflow:
+  dags:
+    daily_pipeline:
+      schedule: "0 2 * * *"
+      sla_minutes: 30
+    data_quality:
+      schedule: "0 3 * * *"
+    data_retention:
+      schedule: "0 4 * * 0"
+    reference_refresh:
+      schedule: "0 1 * * *"
+    backfill_monitor:
+      schedule: "0 6 * * 1"
+
+grafana:
+  port: 30300
+  namespace: mrhealth-monitoring
+  dashboards:
+    - pipeline-health
+    - data-quality
+    - free-tier-usage
+    - airflow-metrics

@@ -1,0 +1,98 @@
+[
+  {
+    "name": "snapshot_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique snapshot identifier"
+  },
+  {
+    "name": "snapshot_date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "Snapshot date (partition key)"
+  },
+  {
+    "name": "snapshot_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "Snapshot timestamp (UTC)"
+  },
+  {
+    "name": "gcs_storage_bytes",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "GCS storage used in bytes"
+  },
+  {
+    "name": "gcs_storage_gb",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "GCS storage used in GB"
+  },
+  {
+    "name": "gcs_limit_gb",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "GCS free tier limit in GB"
+  },
+  {
+    "name": "gcs_usage_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "GCS usage as percentage of free tier limit"
+  },
+  {
+    "name": "bq_storage_bytes",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "BigQuery storage used in bytes"
+  },
+  {
+    "name": "bq_storage_gb",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "BigQuery storage used in GB"
+  },
+  {
+    "name": "bq_limit_gb",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "BigQuery free tier storage limit in GB"
+  },
+  {
+    "name": "bq_usage_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "BigQuery storage usage as percentage of free tier limit"
+  },
+  {
+    "name": "bq_query_bytes_month",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "BigQuery query bytes processed this month"
+  },
+  {
+    "name": "bq_query_tb_month",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "BigQuery query TB processed this month"
+  },
+  {
+    "name": "bq_query_limit_tb",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "BigQuery free tier query limit in TB"
+  },
+  {
+    "name": "bq_query_usage_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "BigQuery query usage as percentage of free tier limit"
+  },
+  {
+    "name": "details",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Additional details as JSON string"
+  }
+]

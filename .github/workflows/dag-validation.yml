@@ -1,0 +1,77 @@
+# F6-02: DAG Validation
+# Triggered on PRs that change dags/ or plugins/.
+# Installs Airflow, imports all DAGs via DagBag, fails if import errors exist.
+
+name: DAG Validation
+
+on:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - "dags/**"
+      - "plugins/**"
+      - "config/project_config.yaml"
+      - "sql/**"
+
+concurrency:
+  group: dag-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-dags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install apache-airflow==2.8.1
+          pip install apache-airflow-providers-google==10.12.0
+
+      - name: Set environment
+        run: |
+          echo "AIRFLOW_HOME=$PWD/airflow_home" >> $GITHUB_ENV
+          echo "AIRFLOW__CORE__LOAD_EXAMPLES=false" >> $GITHUB_ENV
+          echo "AIRFLOW__CORE__DAGS_FOLDER=$PWD/dags" >> $GITHUB_ENV
+          echo "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:///$PWD/airflow_home/airflow.db" >> $GITHUB_ENV
+          echo "MRHEALTH_CONFIG_PATH=$PWD/config/project_config.yaml" >> $GITHUB_ENV
+          echo "MRHEALTH_SQL_PATH=$PWD/sql" >> $GITHUB_ENV
+
+      - name: Initialize Airflow DB
+        run: |
+          mkdir -p airflow_home
+          airflow db migrate
+
+      - name: Validate DAGs via DagBag
+        run: |
+          python - <<'PYEOF'
+          import sys
+          from airflow.models import DagBag
+
+          dag_bag = DagBag(dag_folder="dags", include_examples=False)
+
+          if dag_bag.import_errors:
+              print("DAG import errors found:")
+              for dag_file, error in dag_bag.import_errors.items():
+                  print(f"  {dag_file}:")
+                  print(f"    {error}")
+              sys.exit(1)
+
+          dag_count = len(dag_bag.dags)
+          print(f"Successfully loaded {dag_count} DAG(s):")
+          for dag_id, dag in dag_bag.dags.items():
+              task_count = len(dag.tasks)
+              print(f"  - {dag_id} ({task_count} tasks)")
+
+          if dag_count == 0:
+              print("WARNING: No DAGs found in dags/ directory")
+              sys.exit(1)
+
+          print("\nAll DAGs validated successfully.")
+          PYEOF
