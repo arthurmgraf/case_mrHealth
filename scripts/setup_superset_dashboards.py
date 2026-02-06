@@ -370,19 +370,7 @@ def create_dashboard(
     if resp.status_code in (200, 201):
         dash_id = resp.json()["id"]
         print(f"    [OK] Dashboard created: {title} (id={dash_id})")
-
-        # Link charts to dashboard via PUT request (required for chart rendering)
-        update_payload = {"slices": chart_ids}
-        update_resp = session.put(
-            f"{base_url}/api/v1/dashboard/{dash_id}",
-            json=update_payload,
-            timeout=30,
-        )
-        if update_resp.status_code in (200, 201):
-            print(f"    [OK] Charts linked to dashboard: {len(chart_ids)} charts")
-        else:
-            print(f"    [WARN] Chart linking may have failed: {update_resp.status_code}")
-
+        print(f"    [INFO] Charts in position_json: {len(chart_ids)} (link via DB if needed)")
         return dash_id
     else:
         print(f"    [ERROR] Dashboard failed: {title} -> {resp.status_code}: {resp.text[:200]}")
