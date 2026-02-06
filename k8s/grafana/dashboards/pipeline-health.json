@@ -45,7 +45,6 @@
       "targets": [
         {
           "rawSql": "SELECT status FROM `sixth-foundry-485810-e5.case_ficticio_monitoring.pipeline_metrics` WHERE metric_name = 'pipeline_run' ORDER BY recorded_at DESC LIMIT 1",
-          "format": "table",
           "refId": "A"
         }
       ]
@@ -81,7 +80,6 @@
       "targets": [
         {
           "rawSql": "SELECT recorded_at AS time, CAST(metric_value AS FLOAT64) AS duration_seconds FROM `sixth-foundry-485810-e5.case_ficticio_monitoring.pipeline_metrics` WHERE metric_name = 'pipeline_duration_seconds' AND recorded_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY) ORDER BY recorded_at",
-          "format": "time_series",
           "refId": "A"
         }
       ]
@@ -112,7 +110,6 @@
       "targets": [
         {
           "rawSql": "SELECT recorded_at, metric_name AS task_name, status, CAST(metric_value AS STRING) AS details FROM `sixth-foundry-485810-e5.case_ficticio_monitoring.pipeline_metrics` WHERE status = 'FAILED' AND recorded_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR) ORDER BY recorded_at DESC LIMIT 50",
-          "format": "table",
           "refId": "A"
         }
       ]
@@ -153,7 +150,6 @@
       "targets": [
         {
           "rawSql": "SELECT CAST(metric_value AS FLOAT64) AS rows_processed FROM `sixth-foundry-485810-e5.case_ficticio_monitoring.pipeline_metrics` WHERE metric_name = 'rows_processed' AND DATE(recorded_at) = CURRENT_DATE() ORDER BY recorded_at DESC LIMIT 1",
-          "format": "table",
           "refId": "A"
         }
       ]

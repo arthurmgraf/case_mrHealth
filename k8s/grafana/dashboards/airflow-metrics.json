@@ -50,7 +50,6 @@
       "targets": [
         {
           "rawSql": "SELECT recorded_at AS time, CAST(metric_value AS FLOAT64) AS duration_seconds FROM `sixth-foundry-485810-e5.case_ficticio_monitoring.pipeline_metrics` WHERE metric_name LIKE 'task_duration_%' AND recorded_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY) ORDER BY recorded_at",
-          "format": "time_series",
           "refId": "A"
         }
       ]
@@ -89,7 +88,6 @@
       "targets": [
         {
           "rawSql": "SELECT COUNT(*) AS dags_run_today FROM `sixth-foundry-485810-e5.case_ficticio_monitoring.pipeline_metrics` WHERE metric_name = 'pipeline_run' AND DATE(recorded_at) = CURRENT_DATE()",
-          "format": "table",
           "refId": "A"
         }
       ]
@@ -129,7 +127,6 @@
       "targets": [
         {
           "rawSql": "SELECT REPLACE(metric_name, 'task_duration_', '') AS task_name, ROUND(AVG(CAST(metric_value AS FLOAT64)), 2) AS avg_duration_s, ROUND(MAX(CAST(metric_value AS FLOAT64)), 2) AS max_duration_s, COUNT(*) AS executions FROM `sixth-foundry-485810-e5.case_ficticio_monitoring.pipeline_metrics` WHERE metric_name LIKE 'task_duration_%' AND recorded_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY) GROUP BY metric_name ORDER BY avg_duration_s DESC LIMIT 5",
-          "format": "table",
           "refId": "A"
         }
       ]
@@ -165,7 +162,6 @@
       "targets": [
         {
           "rawSql": "SELECT TIMESTAMP(miss_date) AS time, sla_misses FROM ( SELECT DATE(recorded_at) AS miss_date, COUNT(*) AS sla_misses FROM `sixth-foundry-485810-e5.case_ficticio_monitoring.pipeline_metrics` WHERE metric_name = 'sla_miss' AND recorded_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY) GROUP BY miss_date ) ORDER BY miss_date",
-          "format": "time_series",
           "refId": "A"
         }
       ]
