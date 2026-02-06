@@ -9,14 +9,15 @@ superset:
   # DASHBOARD 1: EXECUTIVE OVERVIEW
   # Source: mrhealth_gold.agg_daily_sales
   # 8 charts: 4 Big Numbers + Time Series + Pie + Bar + Donut
+  # Nomenclature: {dash}_{viz}_{metric}
   # ═══════════════════════════════════════════════════════════════
-  - name: "dashboard_executive"
+  - name: "dash_executive"
     title: "Executive Overview"
-    slug: "dashboard-executive"
+    slug: "executive-overview"
     datasets:
 
-      - name: "dashboard_executive_dataset_total_revenue"
-        chart_name: "dashboard_executive_chart_total_revenue"
+      - name: "exec_bignumber_total_revenue"
+        chart_name: "exec_bignumber_total_revenue_chart"
         viz_type: "big_number_total"
         sql: |
           SELECT
@@ -27,8 +28,8 @@ superset:
           subheader: "Total Revenue (R$)"
           y_axis_format: ",.2f"
 
-      - name: "dashboard_executive_dataset_total_orders"
-        chart_name: "dashboard_executive_chart_total_orders"
+      - name: "exec_bignumber_total_orders"
+        chart_name: "exec_bignumber_total_orders_chart"
         viz_type: "big_number_total"
         sql: |
           SELECT
@@ -39,8 +40,8 @@ superset:
           subheader: "Total Orders"
           y_axis_format: ",d"
 
-      - name: "dashboard_executive_dataset_avg_order_value"
-        chart_name: "dashboard_executive_chart_avg_order_value"
+      - name: "exec_bignumber_avg_order_value"
+        chart_name: "exec_bignumber_avg_order_value_chart"
         viz_type: "big_number_total"
         sql: |
           SELECT
@@ -54,8 +55,8 @@ superset:
           subheader: "Avg Order Value (R$)"
           y_axis_format: ",.2f"
 
-      - name: "dashboard_executive_dataset_cancellation_rate"
-        chart_name: "dashboard_executive_chart_cancellation_rate"
+      - name: "exec_bignumber_cancellation_rate"
+        chart_name: "exec_bignumber_cancellation_rate_chart"
         viz_type: "big_number_total"
         sql: |
           SELECT
@@ -69,8 +70,8 @@ superset:
           subheader: "Cancellation Rate (%)"
           y_axis_format: ",.1f"
 
-      - name: "dashboard_executive_dataset_revenue_trend"
-        chart_name: "dashboard_executive_chart_revenue_trend"
+      - name: "exec_timeseries_revenue_trend"
+        chart_name: "exec_timeseries_revenue_trend_chart"
         viz_type: "echarts_timeseries_line"
         sql: |
           SELECT
@@ -86,8 +87,8 @@ superset:
           rich_tooltip: true
           show_legend: true
 
-      - name: "dashboard_executive_dataset_orders_by_channel"
-        chart_name: "dashboard_executive_chart_orders_by_channel"
+      - name: "exec_pie_orders_by_channel"
+        chart_name: "exec_pie_orders_by_channel_chart"
         viz_type: "pie"
         sql: |
           SELECT
@@ -106,8 +107,8 @@ superset:
           label_type: "key_value_percent"
           color_scheme: "supersetColors"
 
-      - name: "dashboard_executive_dataset_revenue_by_weekday"
-        chart_name: "dashboard_executive_chart_revenue_by_weekday"
+      - name: "exec_bar_revenue_by_weekday"
+        chart_name: "exec_bar_revenue_by_weekday_chart"
         viz_type: "dist_bar"
         sql: |
           SELECT
@@ -132,8 +133,8 @@ superset:
           color_scheme: "supersetColors"
           show_bar_value: true
 
-      - name: "dashboard_executive_dataset_weekend_vs_weekday"
-        chart_name: "dashboard_executive_chart_weekend_vs_weekday"
+      - name: "exec_donut_weekend_vs_weekday"
+        chart_name: "exec_donut_weekend_vs_weekday_chart"
         viz_type: "pie"
         sql: |
           SELECT
@@ -153,14 +154,15 @@ superset:
   # DASHBOARD 2: UNIT PERFORMANCE
   # Source: mrhealth_gold.agg_unit_performance
   # 6 charts: Bar H + Table + 3 Bar + Bar
+  # Nomenclature: {dash}_{viz}_{metric}
   # ═══════════════════════════════════════════════════════════════
-  - name: "dashboard_units"
+  - name: "dash_units"
     title: "Unit Performance"
-    slug: "dashboard-units"
+    slug: "unit-performance"
     datasets:
 
-      - name: "dashboard_units_dataset_top_revenue"
-        chart_name: "dashboard_units_chart_top_revenue"
+      - name: "units_bar_top_revenue"
+        chart_name: "units_bar_top_revenue_chart"
         viz_type: "dist_bar"
         sql: |
           SELECT
@@ -175,8 +177,8 @@ superset:
           color_scheme: "supersetColors"
           show_bar_value: true
 
-      - name: "dashboard_units_dataset_ranking_table"
-        chart_name: "dashboard_units_chart_ranking_table"
+      - name: "units_table_ranking"
+        chart_name: "units_table_ranking_chart"
         viz_type: "table"
         sql: |
           SELECT
@@ -194,8 +196,8 @@ superset:
           all_columns: ["revenue_rank", "unit_name", "state_name", "total_orders", "total_revenue", "avg_order_value", "cancellation_rate", "online_pct"]
           page_length: 50
 
-      - name: "dashboard_units_dataset_online_pct"
-        chart_name: "dashboard_units_chart_online_pct"
+      - name: "units_bar_online_pct"
+        chart_name: "units_bar_online_pct_chart"
         viz_type: "dist_bar"
         sql: |
           SELECT
@@ -210,8 +212,8 @@ superset:
           color_scheme: "supersetColors"
           show_bar_value: true
 
-      - name: "dashboard_units_dataset_cancellation_rate"
-        chart_name: "dashboard_units_chart_cancellation_rate"
+      - name: "units_bar_cancellation_rate"
+        chart_name: "units_bar_cancellation_rate_chart"
         viz_type: "dist_bar"
         sql: |
           SELECT
@@ -227,8 +229,8 @@ superset:
           color_scheme: "bnbColors"
           show_bar_value: true
 
-      - name: "dashboard_units_dataset_revenue_by_state"
-        chart_name: "dashboard_units_chart_revenue_by_state"
+      - name: "units_bar_revenue_by_state"
+        chart_name: "units_bar_revenue_by_state_chart"
         viz_type: "dist_bar"
         sql: |
           SELECT
@@ -245,8 +247,8 @@ superset:
           color_scheme: "supersetColors"
           show_bar_value: true
 
-      - name: "dashboard_units_dataset_avg_order_value"
-        chart_name: "dashboard_units_chart_avg_order_value"
+      - name: "units_bar_avg_order_value"
+        chart_name: "units_bar_avg_order_value_chart"
         viz_type: "dist_bar"
         sql: |
           SELECT
@@ -265,14 +267,15 @@ superset:
   # DASHBOARD 3: PRODUCT ANALYTICS
   # Source: mrhealth_gold.agg_product_performance
   # 5 charts: 2 Bar + Table + Bar + Scatter
+  # Nomenclature: {dash}_{viz}_{metric}
   # ═══════════════════════════════════════════════════════════════
-  - name: "dashboard_products"
+  - name: "dash_products"
     title: "Product Analytics"
-    slug: "dashboard-products"
+    slug: "product-analytics"
     datasets:
 
-      - name: "dashboard_products_dataset_top_revenue"
-        chart_name: "dashboard_products_chart_top_revenue"
+      - name: "prod_bar_top_revenue"
+        chart_name: "prod_bar_top_revenue_chart"
         viz_type: "dist_bar"
         sql: |
           SELECT
@@ -287,8 +290,8 @@ superset:
           color_scheme: "supersetColors"
           show_bar_value: true
 
-      - name: "dashboard_products_dataset_top_volume"
-        chart_name: "dashboard_products_chart_top_volume"
+      - name: "prod_bar_top_volume"
+        chart_name: "prod_bar_top_volume_chart"
         viz_type: "dist_bar"
         sql: |
           SELECT
@@ -303,8 +306,8 @@ superset:
           color_scheme: "bnbColors"
           show_bar_value: true
 
-      - name: "dashboard_products_dataset_product_table"
-        chart_name: "dashboard_products_chart_product_table"
+      - name: "prod_table_full"
+        chart_name: "prod_table_full_chart"
         viz_type: "table"
         sql: |
           SELECT
@@ -321,8 +324,8 @@ superset:
           all_columns: ["revenue_rank", "product_name", "total_revenue", "total_quantity_sold", "total_orders", "avg_unit_price", "unit_penetration_pct"]
           page_length: 50
 
-      - name: "dashboard_products_dataset_unit_penetration"
-        chart_name: "dashboard_products_chart_unit_penetration"
+      - name: "prod_bar_unit_penetration"
+        chart_name: "prod_bar_unit_penetration_chart"
         viz_type: "dist_bar"
         sql: |
           SELECT
@@ -337,8 +340,8 @@ superset:
           color_scheme: "supersetColors"
           show_bar_value: true
 
-      - name: "dashboard_products_dataset_price_vs_revenue"
-        chart_name: "dashboard_products_chart_price_vs_revenue"
+      - name: "prod_bubble_price_vs_revenue"
+        chart_name: "prod_bubble_price_vs_revenue_chart"
         viz_type: "bubble_v2"
         sql: |
           SELECT
@@ -357,14 +360,15 @@ superset:
   # DASHBOARD 4: ORDER DETAIL
   # Source: mrhealth_gold.fact_sales
   # 6 charts: Time Series + Histogram + Pie + Big Number + Mixed + Table
+  # Nomenclature: {dash}_{viz}_{metric}
   # ═══════════════════════════════════════════════════════════════
-  - name: "dashboard_orders"
+  - name: "dash_orders"
     title: "Order Detail"
-    slug: "dashboard-orders"
+    slug: "order-detail"
     datasets:
 
-      - name: "dashboard_orders_dataset_delivery_fee_trend"
-        chart_name: "dashboard_orders_chart_delivery_fee_trend"
+      - name: "orders_timeseries_delivery_fee"
+        chart_name: "orders_timeseries_delivery_fee_chart"
         viz_type: "echarts_timeseries_line"
         sql: |
           SELECT
@@ -380,8 +384,8 @@ superset:
           rich_tooltip: true
           show_legend: true
 
-      - name: "dashboard_orders_dataset_value_distribution"
-        chart_name: "dashboard_orders_chart_value_distribution"
+      - name: "orders_histogram_value_distribution"
+        chart_name: "orders_histogram_value_distribution_chart"
         viz_type: "histogram"
         sql: |
           SELECT
@@ -395,8 +399,8 @@ superset:
           cumulative: false
           normalized: false
 
-      - name: "dashboard_orders_dataset_status_breakdown"
-        chart_name: "dashboard_orders_chart_status_breakdown"
+      - name: "orders_pie_status_breakdown"
+        chart_name: "orders_pie_status_breakdown_chart"
         viz_type: "pie"
         sql: |
           SELECT
@@ -412,8 +416,8 @@ superset:
           label_type: "key_value_percent"
           color_scheme: "supersetColors"
 
-      - name: "dashboard_orders_dataset_items_per_order"
-        chart_name: "dashboard_orders_chart_items_per_order"
+      - name: "orders_bignumber_items_per_order"
+        chart_name: "orders_bignumber_items_per_order_chart"
         viz_type: "big_number_total"
         sql: |
           SELECT
@@ -424,8 +428,8 @@ superset:
           subheader: "Avg Items per Order"
           y_axis_format: ",.1f"
 
-      - name: "dashboard_orders_dataset_revenue_by_channel"
-        chart_name: "dashboard_orders_chart_revenue_by_channel"
+      - name: "orders_bar_revenue_by_channel"
+        chart_name: "orders_bar_revenue_by_channel_chart"
         viz_type: "dist_bar"
         sql: |
           SELECT
@@ -441,8 +445,8 @@ superset:
           color_scheme: "supersetColors"
           show_bar_value: true
 
-      - name: "dashboard_orders_dataset_top_orders"
-        chart_name: "dashboard_orders_chart_top_orders"
+      - name: "orders_table_top_orders"
+        chart_name: "orders_table_top_orders_chart"
         viz_type: "table"
         sql: |
           SELECT

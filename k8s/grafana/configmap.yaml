@@ -1,5 +1,7 @@
 # Grafana Provisioning ConfigMaps
-# 1. Datasource: BigQuery via grafana-bigquery-datasource plugin (GCE auth with SA file)
+# 1. Datasource: Prometheus for infrastructure metrics
+#    NOTE: BigQuery disabled due to org policy iam.disableServiceAccountKeyCreation
+#    Business data dashboards are in Superset instead
 # 2. Dashboard provider: auto-load JSON dashboards from /var/lib/grafana/dashboards/
 ---
 apiVersion: v1
@@ -14,17 +16,19 @@ data:
   datasources.yaml: |
     apiVersion: 1
     datasources:
-      - name: BigQuery MR Health
-        type: grafana-bigquery-datasource
+      - name: Prometheus
+        type: prometheus
         access: proxy
+        url: http://prometheus:9090
         isDefault: true
-        uid: bigquery-mrhealth
+        uid: prometheus
         editable: true
         jsonData:
-          authenticationType: gce
-          defaultProject: sixth-foundry-485810-e5
-          serviceAccountAuth: true
-          serviceAccountKeyPath: /opt/grafana/keys/gcp.json
+          httpMethod: POST
+          manageAlerts: true
+          prometheusType: Prometheus
+          prometheusVersion: 2.48.0
+          timeInterval: 30s
 ---
 apiVersion: v1
 kind: ConfigMap

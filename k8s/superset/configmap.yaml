@@ -17,6 +17,16 @@ data:
     FEATURE_FLAGS = {
         "ENABLE_TEMPLATE_PROCESSING": True,
     }
-    
-    # BigQuery connection (via service account)
+
+    # === FIX ERRO 1035: Disable async queries (no Celery/Redis) ===
+    GLOBAL_ASYNC_QUERIES = False
+    SQLLAB_ASYNC_TIME_LIMIT_SEC = 0
+    RESULTS_BACKEND = None
+
+    # Increase timeouts for sync queries
+    SUPERSET_WEBSERVER_TIMEOUT = 300
+    SQLLAB_TIMEOUT = 300
+    SQL_MAX_ROW = 100000
+
+    # BigQuery connection (via authorized_user)
     GOOGLE_APPLICATION_CREDENTIALS = '/app/keys/gcp.json'
