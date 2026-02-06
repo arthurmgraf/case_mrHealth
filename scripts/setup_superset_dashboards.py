@@ -340,6 +340,14 @@ def create_dashboard(
 
     position_json = build_position_json(chart_ids)
 
+    # Build chart_configuration for json_metadata - links charts to dashboard
+    chart_configuration = {}
+    for chart_id in chart_ids:
+        chart_configuration[str(chart_id)] = {
+            "id": chart_id,
+            "crossFilters": {"scope": "global", "chartsInScope": chart_ids},
+        }
+
     payload = {
         "dashboard_title": title,
         "slug": slug,
@@ -352,6 +360,9 @@ def create_dashboard(
             "label_colors": {},
             "shared_label_colors": {},
             "timed_refresh_immune_slices": [],
+            "chart_configuration": chart_configuration,
+            "default_filters": "{}",
+            "filter_scopes": {},
         }),
         "published": True,
     }
@@ -359,6 +370,19 @@ def create_dashboard(
     if resp.status_code in (200, 201):
         dash_id = resp.json()["id"]
         print(f"    [OK] Dashboard created: {title} (id={dash_id})")
+
+        # Link charts to dashboard via PUT request (required for chart rendering)
+        update_payload = {"slices": chart_ids}
+        update_resp = session.put(
+            f"{base_url}/api/v1/dashboard/{dash_id}",
+            json=update_payload,
+            timeout=30,
+        )
+        if update_resp.status_code in (200, 201):
+            print(f"    [OK] Charts linked to dashboard: {len(chart_ids)} charts")
+        else:
+            print(f"    [WARN] Chart linking may have failed: {update_resp.status_code}")
+
         return dash_id
     else:
         print(f"    [ERROR] Dashboard failed: {title} -> {resp.status_code}: {resp.text[:200]}")
