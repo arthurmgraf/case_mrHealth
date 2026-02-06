@@ -6,27 +6,59 @@ metadata:
 data:
   superset_config.py: |
     import os
-    
+
     # Security
-    SECRET_KEY = os.environ.get('SUPERSET_SECRET_KEY', 'mrhealth-superset-default-key')
-    
-    # Database
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////app/superset_home/superset.db'
-    
-    # Feature flags
+    SECRET_KEY = os.environ.get('SUPERSET_SECRET_KEY', 'mrhealth-superset-k8s-key-2026')
+
+    # ============================================
+    # Database: PostgreSQL (NOT SQLite)
+    # ============================================
+    SQLALCHEMY_DATABASE_URI = (
+        f"postgresql://{os.environ.get('PG_USER', 'mrhealth_admin')}:"
+        f"{os.environ.get('PG_PASSWORD', '')}@"
+        f"{os.environ.get('PG_HOST', 'postgresql')}:"
+        f"{os.environ.get('PG_PORT', '5432')}/"
+        f"{os.environ.get('PG_DATABASE', 'superset_db')}"
+    )
+
+    # ============================================
+    # Feature Flags: Dark Mode + Native Filters
+    # ============================================
     FEATURE_FLAGS = {
         "ENABLE_TEMPLATE_PROCESSING": True,
+        "DASHBOARD_NATIVE_FILTERS": True,
+        "DASHBOARD_CROSS_FILTERS": True,
+        "DASHBOARD_NATIVE_FILTERS_SET": True,
+        "ENABLE_FILTER_BOX_MIGRATION": False,
     }
 
-    # === FIX ERRO 1035: Disable async queries (no Celery/Redis) ===
+    # ============================================
+    # Dark Mode (Superset 4.1+)
+    # ============================================
+    ENABLE_UI_THEME_ADMINISTRATION = True
+
+    # ============================================
+    # Async Queries: Disabled (no Celery/Redis)
+    # ============================================
     GLOBAL_ASYNC_QUERIES = False
     SQLLAB_ASYNC_TIME_LIMIT_SEC = 0
     RESULTS_BACKEND = None
 
-    # Increase timeouts for sync queries
+    # Timeouts for sync queries
     SUPERSET_WEBSERVER_TIMEOUT = 300
     SQLLAB_TIMEOUT = 300
     SQL_MAX_ROW = 100000
 
-    # BigQuery connection (via authorized_user)
+    # BigQuery credentials
     GOOGLE_APPLICATION_CREDENTIALS = '/app/keys/gcp.json'
+
+    # Prevent CSRF issues with cross-origin requests
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_EXEMPT_LIST = []
+    WTF_CSRF_TIME_LIMIT = 60 * 60 * 24 * 365
+
+    # Allow embedding in iframes
+    HTTP_HEADERS = {}
+
+    # Enable anonymous users for public dashboards
+    PUBLIC_ROLE_LIKE = "Gamma"

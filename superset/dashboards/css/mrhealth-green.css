@@ -1,0 +1,259 @@
+/* mrhealth-green.css - Tema verde MR Health (#28a745)
+ * Adaptado de exemplo_css.txt (roxo #670097 -> verde #28a745)
+ * Author: Arthur Graf
+ * Date: February 2026
+ */
+
+/* ============================================
+   HEADERS E TITULOS
+   ============================================ */
+
+/* Headers com fundo verde e texto branco */
+.dashboard-component.dashboard-component-header.header-style-option.background--white.css-5hrkgd {
+    background-color: #28a745;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+/* Headers transparentes com texto verde */
+.dashboard-component.dashboard-component-header.header-style-option.background--transparent.css-5hrkgd {
+    background-color: transparent;
+    color: #28a745;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 16px;
+    font-weight: normal;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Titulos de tabelas e graficos em verde */
+div[style*="overflow: hidden; scrollbar-gutter: stable;"] * {
+    color: #28a745;
+}
+
+/* Links de titulos em verde */
+a.css-1r97axf,
+a.css-1r97axf:hover,
+a.css-1r97axf:visited {
+    color: #28a745;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+/* ============================================
+   TABS E NAVEGACAO
+   ============================================ */
+
+/* Tabs ativas com fundo verde solido */
+.css-r64ix1.ant-tabs-card > .ant-tabs-nav .ant-tabs-tab.ant-tabs-tab-active {
+    background-color: #28a745;
+    color: #FFFFFF;
+}
+
+/* Tabs inativas com verde translucido */
+.css-r64ix1.ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+    margin: 0 4px;
+    padding: 16px 23px;
+    background: rgba(40, 167, 69, 0.5);
+    color: #FFFFFF;
+}
+
+/* ============================================
+   BACKGROUND E LAYOUT
+   ============================================ */
+
+/* Background do dashboard em verde claro */
+.dashboard-content {
+    background-color: rgb(240, 248, 243);
+    padding-bottom: 30px;
+}
+
+/* Grid container com margens */
+.grid-container {
+    margin-top: 15px !important;
+    margin-left: 15px !important;
+    margin-right: 15px !important;
+    margin-bottom: 132px !important;
+}
+
+/* Chart holders com bordas arredondadas */
+.dashboard-component-chart-holder {
+    border-radius: 8px !important;
+    margin-bottom: 0px;
+    padding-top: 8px !important;
+    padding-bottom: 0px !important;
+}
+
+/* ============================================
+   EMPTY STATES E MENSAGENS
+   ============================================ */
+
+/* Texto de "falta de dados" em verde translucido */
+.css-gpre6t,
+.css-17vt6zw .css-19zvg03 {
+    color: rgba(40, 167, 69, 0.5);
+    font-size: 16px;
+    font-weight: normal;
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+    margin-top: -100px;
+}
+
+/* Esconde imagem de empty state */
+img[alt="empty"] {
+    display: none;
+}
+
+/* ============================================
+   FILTROS
+   ============================================ */
+
+/* Remove botao Clear all dos filtros */
+.filter-clear-all-button {
+    display: none;
+}
+
+/* Labels de filtros */
+.ant-form-item-label > label > div > h4 {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+/* ============================================
+   ESTATISTICAS (BIG NUMBER)
+   ============================================ */
+
+.ant-statistic {
+    font-weight: 600;
+}
+
+.ant-statistic-title > span {
+    font-weight: 600 !important;
+}
+
+.ant-statistic-title > div {
+    font-weight: 600 !important;
+}
+
+.ant-statistic-content-prefix {
+    margin-right: 0px;
+}
+
+/* ============================================
+   OUTROS ELEMENTOS
+   ============================================ */
+
+/* Remove icones de ancora dos cabecalhos */
+.anchor-link-container {
+    display: none !important;
+}
+
+/* Esconde controles de header */
+.header-controls {
+    display: none;
+}
+
+/* Dashboard component overflow */
+.dashboard-component {
+    overflow-x: hidden;
+}
+
+/* Header title styling */
+.header-title {
+    font-size: 18px;
+    padding: 0px 0 12px 0;
+}
+
+/* ============================================
+   ROWS COM BACKGROUND
+   ============================================ */
+
+.dragdroppable-row:nth-child(1) {
+    background-color: rgb(255, 255, 255) !important;
+    margin-bottom: 0px !important;
+    border-radius: 8px !important;
+}
+
+.dragdroppable-row:nth-child(1) .dashboard-component-header {
+    margin-bottom: 0px !important;
+}
+
+.dragdroppable-row:nth-child(2) {
+    background-color: rgb(255, 255, 255) !important;
+    border-radius: 0px 0px 8px 8px !important;
+    top: -7px;
+    border: 0;
+    border-top: 1px solid #ccc;
+}
+
+.dragdroppable-row:nth-child(3) {
+    top: -7px;
+}
+
+.dragdroppable-row:nth-child(2) .header-title {
+    padding-bottom: 0px !important;
+    padding-top: 10px !important;
+}
+
+.dragdroppable-row:nth-child(2) .dragdroppable-column:not(:last-child) .chart-slice {
+    border: 0;
+    border-right: 1px solid #ccc;
+}
+
+/* Dashboard component header padding */
+.dashboard-component-header > span > span > div {
+    padding-left: 16px !important;
+}
+
+/* ============================================
+   TABELAS - ESTADOS (OK / WARNING / ERROR)
+   ============================================ */
+
+/* Vermelho = erro */
+table tr td .error {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Amarelo = atencao */
+table tr td .warning {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+/* Verde = OK */
+table tr td .ok {
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* ============================================
+   RESPONSIVO - TELAS PEQUENAS
+   ============================================ */
+
+@media screen and (max-height: 700px) {
+    .ant-popover-inner-content {
+        height: 310px;
+        overflow-y: scroll;
+    }
+
+    .header-title {
+        font-size: 14px;
+    }
+
+    .ant-statistic-title > span {
+        font-size: 13px !important;
+    }
+
+    .ant-statistic-content-prefix {
+        font-size: medium !important;
+    }
+
+    .ant-statistic-content-value {
+        font-size: medium !important;
+    }
+
+    .ant-statistic-content-suffix > div {
+        font-size: small !important;
+    }
+}

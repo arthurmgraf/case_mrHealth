@@ -18,6 +18,7 @@ metadata:
   namespace: mrhealth-db
   labels:
     app: superset
+    version: "4.1"
 spec:
   replicas: 1
   selector:
@@ -27,13 +28,30 @@ spec:
     metadata:
       labels:
         app: superset
+        version: "4.1"
     spec:
       initContainers:
-        - name: superset-init
-          image: apache/superset:3.1.0
+        - name: install-drivers
+          image: apache/superset:4.1.0
           command: ["/bin/bash", "-c"]
           args:
             - |
+              echo "Installing database drivers..."
+              pip install --no-cache-dir \
+                sqlalchemy-bigquery \
+                google-auth \
+                google-cloud-bigquery \
+                psycopg2-binary
+              echo "Drivers installed successfully!"
+          volumeMounts:
+            - name: superset-data
+              mountPath: /app/superset_home
+        - name: superset-init
+          image: apache/superset:4.1.0
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              pip install --no-cache-dir sqlalchemy-bigquery google-auth google-cloud-bigquery psycopg2-binary
               superset db upgrade
               superset fab create-admin \
                 --username admin \
@@ -42,55 +60,86 @@ spec:
                 --email admin@mrhealth.local \
                 --password admin || true
               superset init
-              superset load_examples || true
           env:
             - name: SUPERSET_SECRET_KEY
               value: "mrhealth-superset-k8s-key-2026"
+            - name: PG_HOST
+              value: "postgresql"
+            - name: PG_PORT
+              value: "5432"
+            - name: PG_DATABASE
+              value: "superset_db"
+            - name: PG_USER
+              value: "mrhealth_admin"
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: postgres-password
           volumeMounts:
             - name: superset-data
               mountPath: /app/superset_home
             - name: superset-config
               mountPath: /app/pythonpath/superset_config.py
               subPath: superset_config.py
+            - name: gcp-credentials
+              mountPath: /app/keys
+              readOnly: true
       containers:
         - name: superset
-          image: apache/superset:3.1.0
-          command: ["gunicorn"]
+          image: apache/superset:4.1.0
+          command: ["/bin/bash", "-c"]
           args:
-            - "--bind"
-            - "0.0.0.0:8088"
-            - "--workers"
-            - "2"
-            - "--worker-class"
-            - "gthread"
-            - "--threads"
-            - "4"
-            - "--timeout"
-            - "120"
-            - "superset.app:create_app()"
+            - |
+              pip install --no-cache-dir sqlalchemy-bigquery google-auth google-cloud-bigquery psycopg2-binary
+              gunicorn --bind 0.0.0.0:8088 --workers 2 --worker-class gthread --threads 4 --timeout 120 "superset.app:create_app()"
           ports:
             - containerPort: 8088
           env:
             - name: SUPERSET_SECRET_KEY
               value: "mrhealth-superset-k8s-key-2026"
+            - name: PG_HOST
+              value: "postgresql"
+            - name: PG_PORT
+              value: "5432"
+            - name: PG_DATABASE
+              value: "superset_db"
+            - name: PG_USER
+              value: "mrhealth_admin"
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: postgres-password
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/app/keys/gcp.json"
           volumeMounts:
             - name: superset-data
               mountPath: /app/superset_home
             - name: superset-config
               mountPath: /app/pythonpath/superset_config.py
               subPath: superset_config.py
+            - name: gcp-credentials
+              mountPath: /app/keys
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /health
               port: 8088
-            initialDelaySeconds: 60
+            initialDelaySeconds: 120
             periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8088
+            initialDelaySeconds: 180
+            periodSeconds: 30
           resources:
             requests:
               memory: "512Mi"
               cpu: "250m"
             limits:
-              memory: "1.5Gi"
+              memory: "2Gi"
               cpu: "1000m"
       volumes:
         - name: superset-data
@@ -99,6 +148,10 @@ spec:
         - name: superset-config
           configMap:
             name: superset-config
+        - name: gcp-credentials
+          hostPath:
+            path: /home/arthur/case_mrHealth/keys
+            type: Directory
 ---
 apiVersion: v1
 kind: Service

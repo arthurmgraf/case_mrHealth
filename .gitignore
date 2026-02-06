@@ -44,3 +44,6 @@ airflow/logs/
 
 # Claude
 .claude/
+
+# Examples (reference files, not part of project)
+exemplo_outros_projetos/
