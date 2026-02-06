@@ -36,8 +36,11 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
+              echo "Cleaning old packages from superset_home..."
+              rm -rf /app/superset_home/.local 2>/dev/null || true
               echo "Installing database drivers..."
               pip install --no-cache-dir \
+                'packaging<24' \
                 sqlalchemy-bigquery \
                 google-auth \
                 google-cloud-bigquery \
@@ -51,7 +54,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              pip install --no-cache-dir sqlalchemy-bigquery google-auth google-cloud-bigquery psycopg2-binary
+              pip install --no-cache-dir 'packaging<24' sqlalchemy-bigquery google-auth google-cloud-bigquery psycopg2-binary
               superset db upgrade
               superset fab create-admin \
                 --username admin \
@@ -91,7 +94,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              pip install --no-cache-dir sqlalchemy-bigquery google-auth google-cloud-bigquery psycopg2-binary
+              pip install --no-cache-dir 'packaging<24' sqlalchemy-bigquery google-auth google-cloud-bigquery psycopg2-binary
               gunicorn --bind 0.0.0.0:8088 --workers 2 --worker-class gthread --threads 4 --timeout 120 "superset.app:create_app()"
           ports:
             - containerPort: 8088
