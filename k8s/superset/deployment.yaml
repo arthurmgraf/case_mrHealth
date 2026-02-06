@@ -32,7 +32,7 @@ spec:
     spec:
       initContainers:
         - name: install-drivers
-          image: apache/superset:4.1.0
+          image: apache/superset:4.0.2
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -47,7 +47,7 @@ spec:
             - name: superset-data
               mountPath: /app/superset_home
         - name: superset-init
-          image: apache/superset:4.1.0
+          image: apache/superset:4.0.2
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -87,7 +87,7 @@ spec:
               readOnly: true
       containers:
         - name: superset
-          image: apache/superset:4.1.0
+          image: apache/superset:4.0.2
           command: ["/bin/bash", "-c"]
           args:
             - |
