@@ -16,6 +16,14 @@ superset:
     slug: "executive-overview"
     datasets:
 
+      # ───────────────────────────────────────────────────────────────
+      # Jinja Templates Available:
+      #   {{ from_dttm }} - Start date filter (YYYY-MM-DD HH:MM:SS)
+      #   {{ to_dttm }}   - End date filter (YYYY-MM-DD HH:MM:SS)
+      #   {{ filter_values('col') }} - Cross-filter values from other charts
+      #   {% if ... %} ... {% endif %} - Conditional SQL
+      # ───────────────────────────────────────────────────────────────
+
       - name: "exec_bignumber_total_revenue"
         chart_name: "exec_bignumber_total_revenue_chart"
         viz_type: "big_number_total"
@@ -23,6 +31,9 @@ superset:
           SELECT
             ROUND(SUM(total_revenue), 2) AS total_revenue
           FROM `mrhealth_gold.agg_daily_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
         params:
           metric: "total_revenue"
           subheader: "Total Revenue (R$)"
@@ -35,6 +46,9 @@ superset:
           SELECT
             SUM(total_orders) AS total_orders
           FROM `mrhealth_gold.agg_daily_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
         params:
           metric: "total_orders"
           subheader: "Total Orders"
@@ -50,6 +64,9 @@ superset:
               2
             ) AS avg_order_value
           FROM `mrhealth_gold.agg_daily_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
         params:
           metric: "avg_order_value"
           subheader: "Avg Order Value (R$)"
@@ -65,6 +82,9 @@ superset:
               2
             ) AS cancellation_rate
           FROM `mrhealth_gold.agg_daily_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
         params:
           metric: "cancellation_rate"
           subheader: "Cancellation Rate (%)"
@@ -80,6 +100,9 @@ superset:
             online_revenue,
             physical_revenue
           FROM `mrhealth_gold.agg_daily_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
           ORDER BY order_date
         params:
           x_axis: "order_date"
@@ -95,11 +118,17 @@ superset:
             'Online' AS channel,
             SUM(online_orders) AS orders
           FROM `mrhealth_gold.agg_daily_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
           UNION ALL
           SELECT
             'Physical' AS channel,
             SUM(physical_orders) AS orders
           FROM `mrhealth_gold.agg_daily_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
         params:
           groupby: ["channel"]
           metric: "orders"
@@ -116,6 +145,9 @@ superset:
             ROUND(SUM(total_revenue), 2) AS total_revenue,
             SUM(total_orders) AS total_orders
           FROM `mrhealth_gold.agg_daily_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
           GROUP BY day_of_week_name
           ORDER BY
             CASE day_of_week_name
@@ -141,6 +173,9 @@ superset:
             CASE WHEN is_weekend THEN 'Weekend' ELSE 'Weekday' END AS period_type,
             ROUND(SUM(total_revenue), 2) AS total_revenue
           FROM `mrhealth_gold.agg_daily_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
           GROUP BY is_weekend
         params:
           groupby: ["period_type"]
@@ -169,6 +204,10 @@ superset:
             unit_name,
             ROUND(total_revenue, 2) AS total_revenue
           FROM `mrhealth_gold.agg_unit_performance`
+          WHERE 1=1
+          {% if filter_values('state_name') %}
+            AND state_name IN ({{ filter_values('state_name') | where_in }})
+          {% endif %}
           ORDER BY total_revenue DESC
           LIMIT 10
         params:
@@ -191,6 +230,10 @@ superset:
             ROUND(cancellation_rate, 1) AS cancellation_rate,
             ROUND(online_pct, 1) AS online_pct
           FROM mrhealth_gold.agg_unit_performance
+          WHERE 1=1
+          {% if filter_values('state_name') %}
+            AND state_name IN ({{ filter_values('state_name') | where_in }})
+          {% endif %}
           ORDER BY revenue_rank
         params:
           all_columns: ["revenue_rank", "unit_name", "state_name", "total_orders", "total_revenue", "avg_order_value", "cancellation_rate", "online_pct"]
@@ -204,6 +247,10 @@ superset:
             unit_name,
             ROUND(online_pct, 1) AS online_pct
           FROM `mrhealth_gold.agg_unit_performance`
+          WHERE 1=1
+          {% if filter_values('state_name') %}
+            AND state_name IN ({{ filter_values('state_name') | where_in }})
+          {% endif %}
           ORDER BY online_pct DESC
           LIMIT 10
         params:
@@ -221,6 +268,9 @@ superset:
             ROUND(cancellation_rate, 1) AS cancellation_rate
           FROM `mrhealth_gold.agg_unit_performance`
           WHERE cancellation_rate > 0
+          {% if filter_values('state_name') %}
+            AND state_name IN ({{ filter_values('state_name') | where_in }})
+          {% endif %}
           ORDER BY cancellation_rate DESC
           LIMIT 10
         params:
@@ -239,6 +289,10 @@ superset:
             SUM(total_orders) AS total_orders,
             COUNT(*) AS unit_count
           FROM `mrhealth_gold.agg_unit_performance`
+          WHERE 1=1
+          {% if filter_values('state_name') %}
+            AND state_name IN ({{ filter_values('state_name') | where_in }})
+          {% endif %}
           GROUP BY state_name
           ORDER BY total_revenue DESC
         params:
@@ -255,6 +309,10 @@ superset:
             unit_name,
             ROUND(avg_order_value, 2) AS avg_order_value
           FROM `mrhealth_gold.agg_unit_performance`
+          WHERE 1=1
+          {% if filter_values('state_name') %}
+            AND state_name IN ({{ filter_values('state_name') | where_in }})
+          {% endif %}
           ORDER BY avg_order_value DESC
           LIMIT 10
         params:
@@ -282,6 +340,10 @@ superset:
             product_name,
             ROUND(total_revenue, 2) AS total_revenue
           FROM `mrhealth_gold.agg_product_performance`
+          WHERE 1=1
+          {% if filter_values('product_name') %}
+            AND product_name IN ({{ filter_values('product_name') | where_in }})
+          {% endif %}
           ORDER BY total_revenue DESC
           LIMIT 10
         params:
@@ -298,6 +360,10 @@ superset:
             product_name,
             total_quantity_sold
           FROM `mrhealth_gold.agg_product_performance`
+          WHERE 1=1
+          {% if filter_values('product_name') %}
+            AND product_name IN ({{ filter_values('product_name') | where_in }})
+          {% endif %}
           ORDER BY total_quantity_sold DESC
           LIMIT 10
         params:
@@ -319,6 +385,10 @@ superset:
             ROUND(avg_unit_price, 2) AS avg_unit_price,
             ROUND(unit_penetration_pct, 1) AS unit_penetration_pct
           FROM mrhealth_gold.agg_product_performance
+          WHERE 1=1
+          {% if filter_values('product_name') %}
+            AND product_name IN ({{ filter_values('product_name') | where_in }})
+          {% endif %}
           ORDER BY revenue_rank
         params:
           all_columns: ["revenue_rank", "product_name", "total_revenue", "total_quantity_sold", "total_orders", "avg_unit_price", "unit_penetration_pct"]
@@ -332,6 +402,10 @@ superset:
             product_name,
             ROUND(unit_penetration_pct, 1) AS unit_penetration_pct
           FROM `mrhealth_gold.agg_product_performance`
+          WHERE 1=1
+          {% if filter_values('product_name') %}
+            AND product_name IN ({{ filter_values('product_name') | where_in }})
+          {% endif %}
           ORDER BY unit_penetration_pct DESC
           LIMIT 15
         params:
@@ -350,6 +424,10 @@ superset:
             ROUND(total_revenue, 2) AS total_revenue,
             total_quantity_sold
           FROM `mrhealth_gold.agg_product_performance`
+          WHERE 1=1
+          {% if filter_values('product_name') %}
+            AND product_name IN ({{ filter_values('product_name') | where_in }})
+          {% endif %}
         params:
           x: "avg_unit_price"
           "y": "total_revenue"
@@ -376,6 +454,15 @@ superset:
             ROUND(AVG(delivery_fee), 2) AS avg_delivery_fee,
             ROUND(SUM(delivery_fee), 2) AS total_delivery_fees
           FROM `mrhealth_gold.fact_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
+          {% if filter_values('order_type') %}
+            AND order_type IN ({{ filter_values('order_type') | where_in }})
+          {% endif %}
+          {% if filter_values('order_status') %}
+            AND order_status IN ({{ filter_values('order_status') | where_in }})
+          {% endif %}
           GROUP BY order_date
           ORDER BY order_date
         params:
@@ -392,6 +479,11 @@ superset:
             order_value
           FROM `mrhealth_gold.fact_sales`
           WHERE order_status != 'Cancelado'
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
+          {% if filter_values('order_type') %}
+            AND order_type IN ({{ filter_values('order_type') | where_in }})
+          {% endif %}
         params:
           all_columns: ["order_value"]
           column: "order_value"
@@ -407,6 +499,12 @@ superset:
             order_status,
             COUNT(*) AS order_count
           FROM `mrhealth_gold.fact_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
+          {% if filter_values('order_type') %}
+            AND order_type IN ({{ filter_values('order_type') | where_in }})
+          {% endif %}
           GROUP BY order_status
           ORDER BY order_count DESC
         params:
@@ -423,6 +521,15 @@ superset:
           SELECT
             ROUND(AVG(total_items), 2) AS avg_items_per_order
           FROM `mrhealth_gold.fact_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
+          {% if filter_values('order_type') %}
+            AND order_type IN ({{ filter_values('order_type') | where_in }})
+          {% endif %}
+          {% if filter_values('order_status') %}
+            AND order_status IN ({{ filter_values('order_status') | where_in }})
+          {% endif %}
         params:
           metric: "avg_items_per_order"
           subheader: "Avg Items per Order"
@@ -438,6 +545,12 @@ superset:
             COUNT(*) AS order_count,
             ROUND(AVG(order_value), 2) AS avg_order_value
           FROM `mrhealth_gold.fact_sales`
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
+          {% if filter_values('order_status') %}
+            AND order_status IN ({{ filter_values('order_status') | where_in }})
+          {% endif %}
           GROUP BY order_type
         params:
           groupby: ["order_type"]
@@ -458,6 +571,15 @@ superset:
             ROUND(order_value, 2) AS order_value,
             ROUND(delivery_fee, 2) AS delivery_fee
           FROM mrhealth_gold.fact_sales
+          WHERE 1=1
+          {% if from_dttm %}AND order_date >= DATE('{{ from_dttm }}'){% endif %}
+          {% if to_dttm %}AND order_date <= DATE('{{ to_dttm }}'){% endif %}
+          {% if filter_values('order_type') %}
+            AND order_type IN ({{ filter_values('order_type') | where_in }})
+          {% endif %}
+          {% if filter_values('order_status') %}
+            AND order_status IN ({{ filter_values('order_status') | where_in }})
+          {% endif %}
           ORDER BY order_value DESC
           LIMIT 20
         params:
