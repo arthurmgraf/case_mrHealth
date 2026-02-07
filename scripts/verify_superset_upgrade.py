@@ -87,7 +87,7 @@ class SupersetVerifier:
         self.username = username
         self.password = password
         self.session = requests.Session()
-        self.session.headers.update({"Content-Type": "application/json"})
+        # Don't set Content-Type here - let requests set it based on the data type
         self.report = VerificationReport()
 
     def authenticate(self) -> bool:
@@ -127,7 +127,11 @@ class SupersetVerifier:
                 api_csrf = csrf_resp.json().get("result", "")
                 self.session.headers.update({"X-CSRFToken": api_csrf})
 
-            self.session.headers.update({"Referer": self.base_url})
+            # Set headers for JSON API calls
+            self.session.headers.update({
+                "Content-Type": "application/json",
+                "Referer": self.base_url,
+            })
             return True
 
         except Exception as e:
