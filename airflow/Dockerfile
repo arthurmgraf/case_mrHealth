@@ -1,5 +1,5 @@
 # Pin by tag for readability; production should also verify digest
-FROM apache/airflow:2.8.1-python3.11
+FROM apache/airflow:3.2.1-python3.11
 
 USER airflow
 
